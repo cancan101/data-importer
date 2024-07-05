@@ -20,6 +20,8 @@ use Symfony\Component\Mime\MimeTypes;
 
 class CsvFileInterpreter extends AbstractInterpreter
 {
+    private const UTF8_BOM = "\xEF\xBB\xBF";
+
     /**
      * @var bool
      */
@@ -43,6 +45,8 @@ class CsvFileInterpreter extends AbstractInterpreter
     protected function doInterpretFileAndCallProcessRow(string $path): void
     {
         if (($handle = fopen($path, 'r')) !== false) {
+            $this->skipByteOrderMark($handle);
+
             if ($this->skipFirstRow) {
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
@@ -88,6 +92,8 @@ class CsvFileInterpreter extends AbstractInterpreter
         $readRecordNumber = -1;
 
         if ($this->fileValid($path) && ($handle = fopen($path, 'r')) !== false) {
+            $this->skipByteOrderMark($handle);
+
             if ($this->skipFirstRow) {
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
@@ -126,5 +132,13 @@ class CsvFileInterpreter extends AbstractInterpreter
         }
 
         return new PreviewData($columns, $previewData, $readRecordNumber, $mappedColumns);
+    }
+
+    private function skipByteOrderMark($handle): void
+    {
+        $bom = fread($handle, strlen(self::UTF8_BOM));
+        if (0 !== strncmp(self::UTF8_BOM, $bom, strlen(self::UTF8_BOM))) {
+            rewind($handle);
+        }
     }
 }
