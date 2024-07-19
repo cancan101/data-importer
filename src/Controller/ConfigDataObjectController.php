@@ -122,14 +122,27 @@ class ConfigDataObjectController extends UserAwareController
             try {
                 $interpreter = $interpreterFactory->loadInterpreter($configName, $config['interpreterConfig'], $config['processingConfig']);
                 $dataPreview = $interpreter->previewData($previewFilePath);
+                $columnHeaders = $dataPreview->getDataColumnHeaders();
 
-                return $dataPreview->getDataColumnHeaders();
+                // Validate if the column headers are valid JSON. Otherwise take care of the preview file to be deleted.
+                if (!$this->isValidJson($columnHeaders)) {
+                    throw new \Exception('Invalid column headers.');
+                }
+
+                return $columnHeaders;
             } catch (Exception $e) {
                 Logger::warning($e);
             }
         }
 
         return [];
+    }
+
+    protected function isValidJson(array $array): bool
+    {
+        json_encode($array);
+
+        return json_last_error() === \JSON_ERROR_NONE;
     }
 
     /**
@@ -287,6 +300,7 @@ class ConfigDataObjectController extends UserAwareController
         $hasData = false;
         $errorMessage = '';
         $previewFilePath = $this->previewService->getLocalPreviewFile($configName, $this->getPimcoreUser());
+        $dataPreviewData = [];
         if (is_file($previewFilePath)) {
             $config = $configurationPreparationService->prepareConfiguration($configName, $currentConfig);
 
@@ -304,6 +318,13 @@ class ConfigDataObjectController extends UserAwareController
                 if ($interpreter->fileValid($previewFilePath)) {
                     $dataPreview = $interpreter->previewData($previewFilePath, $recordNumber, $mappedColumns);
                     $hasData = true;
+
+                    $preview = $dataPreview->getDataPreview();
+                    if (!$this->isValidJson($preview)) {
+                        unlink($previewFilePath);
+                        throw new \Exception('Invalid data preview. Deleted preview data.');
+                    }
+                    $dataPreviewData = $preview;
                 } else {
                     $errorMessage = $translator->trans('plugin_pimcore_datahub_data_importer_configpanel_preview_error_invalid_file', [], 'admin');
                 }
@@ -314,7 +335,7 @@ class ConfigDataObjectController extends UserAwareController
         }
 
         return new JsonResponse([
-            'dataPreview' => $dataPreview ? $dataPreview->getDataPreview() : [],
+            'dataPreview' => $dataPreviewData,
             'previewRecordIndex' => $dataPreview ? $dataPreview->getRecordNumber() : 0,
             'hasData' => $hasData,
             'errorMessage' => $errorMessage
