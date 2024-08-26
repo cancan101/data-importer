@@ -23,7 +23,6 @@ use Pimcore\Bundle\DataImporterBundle\Resolver\Resolver;
 use Pimcore\Log\ApplicationLogger;
 use Pimcore\Log\FileObject;
 use Pimcore\Model\Tool\TmpStore;
-use Pimcore\Tool;
 use Pimcore\Tool\Admin;
 use Psr\Log\LoggerAwareTrait;
 
