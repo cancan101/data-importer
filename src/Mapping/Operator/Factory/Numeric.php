@@ -21,16 +21,22 @@ use Pimcore\Bundle\DataImporterBundle\Mapping\Type\TransformationDataTypeService
 
 class Numeric extends AbstractOperator
 {
+    private bool $returnNullIfEmpty = false;
+
     /**
      * @param mixed $inputData
      * @param bool $dryRun
      *
-     * @return float
+     * @return float|null
      */
     public function process($inputData, bool $dryRun = false)
     {
         if (is_array($inputData)) {
             $inputData = reset($inputData);
+        }
+
+        if ($this->returnNullIfEmpty && empty($inputData)) {
+            return null;
         }
 
         return floatval($inputData);
@@ -60,6 +66,15 @@ class Numeric extends AbstractOperator
      */
     public function generateResultPreview($inputData)
     {
+        if ($this->returnNullIfEmpty && empty($inputData)) {
+            return null;
+        }
+
         return $inputData;
+    }
+
+    public function setSettings(array $settings): void
+    {
+        $this->returnNullIfEmpty = (bool) ($settings['returnNullIfEmpty'] ?? false);
     }
 }
