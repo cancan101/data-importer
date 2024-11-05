@@ -28,6 +28,11 @@ class CsvFileInterpreter extends AbstractInterpreter
     protected $skipFirstRow;
 
     /**
+     * @var bool
+     */
+    protected $saveHeaderName;
+
+    /**
      * @var string
      */
     protected $delimiter;
@@ -47,12 +52,19 @@ class CsvFileInterpreter extends AbstractInterpreter
         if (($handle = fopen($path, 'r')) !== false) {
             $this->skipByteOrderMark($handle);
 
+            $header = null;
             if ($this->skipFirstRow) {
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
+                if($this->saveHeaderName){
+                    $header = $data;
+                }
             }
 
             while (($data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
+                if($header !== null){
+                    $data = array_combine($header, $data);
+                }
                 $this->processImportRow($data);
             }
             fclose($handle);
@@ -62,6 +74,7 @@ class CsvFileInterpreter extends AbstractInterpreter
     public function setSettings(array $settings): void
     {
         $this->skipFirstRow = $settings['skipFirstRow'] ?? false;
+        $this->saveHeaderName = $settings['saveHeaderName'] ?? false;
         $this->delimiter = $settings['delimiter'] ?? ',';
         $this->enclosure = $settings['enclosure'] ?? '"';
         $this->escape = $settings['escape'] ?? '\\';
@@ -90,6 +103,7 @@ class CsvFileInterpreter extends AbstractInterpreter
         $previewData = [];
         $columns = [];
         $readRecordNumber = -1;
+        $header = null;
 
         if ($this->fileValid($path) && ($handle = fopen($path, 'r')) !== false) {
             $this->skipByteOrderMark($handle);
@@ -98,13 +112,23 @@ class CsvFileInterpreter extends AbstractInterpreter
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
 
-                foreach ($data as $index => $columnHeader) {
-                    $columns[$index] = trim($columnHeader) . " [$index]";
+                if($this->saveHeaderName){
+                    $header = $data;
+                    foreach ($data as $index => $columnHeader) {
+                        $columns[$columnHeader] = trim($columnHeader);
+                    }
+                }else{
+                    foreach ($data as $index => $columnHeader) {
+                        $columns[$index] = trim($columnHeader) . " [$index]";
+                    }
                 }
             }
 
             $previousData = null;
             while ($readRecordNumber < $recordNumber && ($data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
+                if($header !== null){
+                    $data = array_combine($header, $data);
+                }
                 $previousData = $data;
                 $readRecordNumber++;
             }
