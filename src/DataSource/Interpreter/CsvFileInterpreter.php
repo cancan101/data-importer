@@ -27,10 +27,7 @@ class CsvFileInterpreter extends AbstractInterpreter
      */
     protected $skipFirstRow;
 
-    /**
-     * @var bool
-     */
-    protected $saveHeaderName;
+    protected bool $saveHeaderName;
 
     /**
      * @var string
