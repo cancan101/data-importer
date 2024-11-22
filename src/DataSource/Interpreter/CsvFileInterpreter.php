@@ -53,13 +53,13 @@ class CsvFileInterpreter extends AbstractInterpreter
             if ($this->skipFirstRow) {
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
-                if($this->saveHeaderName){
+                if ($this->saveHeaderName) {
                     $header = $data;
                 }
             }
 
             while (($data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
-                if($header !== null){
+                if ($header !== null) {
                     $data = array_combine($header, $data);
                 }
                 $this->processImportRow($data);
@@ -109,12 +109,12 @@ class CsvFileInterpreter extends AbstractInterpreter
                 //load first row and ignore it
                 $data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
 
-                if($this->saveHeaderName){
+                if ($this->saveHeaderName) {
                     $header = $data;
                     foreach ($data as $index => $columnHeader) {
                         $columns[$columnHeader] = trim($columnHeader);
                     }
-                }else{
+                } else {
                     foreach ($data as $index => $columnHeader) {
                         $columns[$index] = trim($columnHeader) . " [$index]";
                     }
@@ -123,7 +123,7 @@ class CsvFileInterpreter extends AbstractInterpreter
 
             $previousData = null;
             while ($readRecordNumber < $recordNumber && ($data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
-                if($header !== null){
+                if ($header !== null) {
                     $data = array_combine($header, $data);
                 }
                 $previousData = $data;
