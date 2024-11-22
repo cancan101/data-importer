@@ -15,7 +15,7 @@
 
 namespace Pimcore\Bundle\DataImporterBundle\DataSource\Interpreter;
 
-use JmesPath;
+use JmesPath\Env as JmesPath;
 use Pimcore\Bundle\DataImporterBundle\PimcoreDataImporterBundle;
 use Pimcore\Bundle\DataImporterBundle\Preview\Model\PreviewData;
 
@@ -146,6 +146,6 @@ class JsonFileInterpreter extends AbstractInterpreter
      */
     private function getValueFromPath(array $data): mixed
     {
-        return JmesPath\Env::search($this->path, $data);
+        return JmesPath::search($this->path, $data);
     }
 }

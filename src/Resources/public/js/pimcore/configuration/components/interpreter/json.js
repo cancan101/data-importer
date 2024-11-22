@@ -28,7 +28,7 @@ pimcore.plugin.pimcoreDataImporterBundle.configuration.components.interpreter.js
                 items: [
                     {
                         xtype: 'textfield',
-                        fieldLabel: 'Path',
+                        fieldLabel: t('plugin_pimcore_datahub_data_importer_configpanel_json_path'),
                         name: this.dataNamePrefix + 'path',
                         value: this.data.path || '',
                     }
