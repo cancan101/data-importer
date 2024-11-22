@@ -40,7 +40,7 @@ class JsonFileInterpreter extends AbstractInterpreter
             $data = json_decode($this->prepareContent($content), true);
 
             if (!empty($this->path)) {
-                return $this->getValueFromPath($this->path, $data);
+                return $this->getValueFromPath($data);
             }
 
             return $data;
@@ -144,8 +144,8 @@ class JsonFileInterpreter extends AbstractInterpreter
     /**
      * Returns a value from the specified path in a nested array `$data`.
      */
-    private function getValueFromPath(string $path, array $data): mixed
+    private function getValueFromPath(array $data): mixed
     {
-        return JmesPath\Env::search($path, $data);
+        return JmesPath\Env::search($this->path, $data);
     }
 }
