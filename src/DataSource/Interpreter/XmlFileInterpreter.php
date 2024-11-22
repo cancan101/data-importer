@@ -53,7 +53,7 @@ class XmlFileInterpreter extends AbstractInterpreter
      */
     protected function loadData(string $path)
     {
-        if ($this->cachedFilePath === $path && !empty($this->cachedContent)) {
+        if ($this->cachedFilePath !== $path || !empty($this->cachedContent)) {
             $schema = $this->schema;
             $dom = XmlUtils::loadFile($path, function ($dom) use ($schema) {
                 if (!empty($schema)) {
