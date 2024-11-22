@@ -26,6 +26,12 @@ pimcore.plugin.pimcoreDataImporterBundle.configuration.components.interpreter.js
                 },
                 border: false,
                 items: [
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Path',
+                        name: this.dataNamePrefix + 'path',
+                        value: this.data.path || '',
+                    }
                 ]
             });
         }

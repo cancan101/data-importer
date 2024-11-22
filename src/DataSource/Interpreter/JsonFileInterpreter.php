@@ -20,6 +20,8 @@ use Pimcore\Bundle\DataImporterBundle\Preview\Model\PreviewData;
 
 class JsonFileInterpreter extends AbstractInterpreter
 {
+    protected string $path;
+
     /**
      * @var array|null
      */
@@ -34,8 +36,13 @@ class JsonFileInterpreter extends AbstractInterpreter
     {
         if ($this->cachedFilePath === $path && !empty($this->cachedContent)) {
             $content = file_get_contents($path);
+            $data = json_decode($this->prepareContent($content), true);
 
-            return json_decode($this->prepareContent($content), true);
+            if (!empty($this->path)) {
+                return $this->getValueFromPath($this->path, $data);
+            }
+
+            return $data;
         } else {
             return $this->cachedContent;
         }
@@ -52,7 +59,7 @@ class JsonFileInterpreter extends AbstractInterpreter
 
     public function setSettings(array $settings): void
     {
-        //nothing to do
+        $this->path = $settings['path'];
     }
 
     /**
@@ -90,18 +97,18 @@ class JsonFileInterpreter extends AbstractInterpreter
 
         $data = json_decode($this->prepareContent($content), true);
 
-        if (json_last_error() === JSON_ERROR_NONE) {
-            $this->cachedContent = $data;
-            $this->cachedFilePath = $path;
-
-            return true;
-        } else {
+        if (!$this->isJsonValid($data)) {
             $this->applicationLogger->error('Reading file ERROR: ' . json_last_error_msg(), [
                 'component' => PimcoreDataImporterBundle::LOGGER_COMPONENT_PREFIX . $this->configName
             ]);
 
             return false;
         }
+
+        $this->cachedContent = $data;
+        $this->cachedFilePath = $path;
+
+        return true;
     }
 
     public function previewData(string $path, int $recordNumber = 0, array $mappedColumns = []): PreviewData
@@ -131,5 +138,68 @@ class JsonFileInterpreter extends AbstractInterpreter
         }
 
         return new PreviewData($columns, $previewData, $readRecordNumber, $mappedColumns);
+    }
+
+    /**
+     * Returns false if any errors occurred during the last JSON decoding or
+     * if the user-specified path wasn't found in the array `$data`
+     */
+    private function isJsonValid(?array $data): bool
+    {
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return false;
+        }
+
+        if (!empty($this->path) && !$this->isValueOnPath($this->path, $data)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if a value exists at the specified path in a nested array `$data`.
+     *
+     * This method takes a path string (in the form of '/key1/key2/.../keyN') and traverses
+     * the provided array `$data` to determine if the specified path exists.
+     *
+     * @param string $path The path to check, represented as a string with keys separated by slashes.
+     * @param array $data The associative array to search through.
+     *
+     * @return bool Returns true if the entire path exists in the data array
+     *              false if any part of the path does not exist or if the value on the path isn't array
+     */
+    private function isValueOnPath(string $path, array $data): bool
+    {
+        $pathParts = explode('/', trim($path, '/'));
+
+        foreach ($pathParts as $pathPart) {
+            if (isset($data[$pathPart])) {
+                $data = $data[$pathPart];
+            } else {
+                return false;
+            }
+        }
+
+        if (!is_array($data)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns a value from the specified path in a nested array `$data`.
+     * Validation is done by the function `JsonFileInterpreter::isValueOnPath`
+     */
+    private function getValueFromPath(string $path, array $data): array
+    {
+        $pathParts = explode('/', trim($path, '/'));
+
+        foreach ($pathParts as $pathPart) {
+            $data = $data[$pathPart];
+        }
+
+        return $data;
     }
 }
