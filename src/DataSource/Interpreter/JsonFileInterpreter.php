@@ -33,11 +33,15 @@ class JsonFileInterpreter extends AbstractInterpreter
      */
     protected $cachedFilePath = null;
 
+    protected function loadDataRaw(string $path): array {
+        $content = file_get_contents($path);
+        return json_decode($this->prepareContent($content), true);
+    }
+
     protected function loadData(string $path): array
     {
         if ($this->cachedFilePath !== $path || empty($this->cachedContent)) {
-            $content = file_get_contents($path);
-            $data = json_decode($this->prepareContent($content), true);
+            $data = $this->loadDataRaw($path);
         } else {
             $data = $this->cachedContent;
         }
@@ -93,9 +97,7 @@ class JsonFileInterpreter extends AbstractInterpreter
             }
         }
 
-        $content = file_get_contents($path);
-
-        $data = json_decode($this->prepareContent($content), true);
+        $data = $this->loadDataRaw($path);
 
         if (json_last_error() === JSON_ERROR_NONE) {
             $this->cachedContent = $data;
