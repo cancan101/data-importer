@@ -228,6 +228,7 @@ class ImportProcessingService
                 $event = new PreSaveEvent($configName, $importDataRow, $element);
                 $this->eventDispatcher->dispatch($event);
 
+                $this->checkKey($element);
                 $element
                     ->setUserModification($userOwner)
                     ->save();
@@ -392,5 +393,12 @@ class ImportProcessingService
         $infoEntryId = self::INFO_ENTRY_ID_PREFIX . $configName;
         TmpStore::delete($infoEntryId);
         $this->queueService->cleanupQueueItems($configName);
+    }
+
+    private function checkKey(ElementInterface $element): void
+    {
+        if (empty($element->getKey())) {
+            $element->setKey(uniqid('import-', true));
+        }
     }
 }
