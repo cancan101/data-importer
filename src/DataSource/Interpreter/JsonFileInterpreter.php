@@ -16,8 +16,10 @@
 namespace Pimcore\Bundle\DataImporterBundle\DataSource\Interpreter;
 
 use JmesPath\Env as JmesPath;
+use JmesPath\SyntaxErrorException;
 use Pimcore\Bundle\DataImporterBundle\PimcoreDataImporterBundle;
 use Pimcore\Bundle\DataImporterBundle\Preview\Model\PreviewData;
+use Pimcore\Bundle\DataImporterBundle\Exception\InvalidConfigurationException;
 
 class JsonFileInterpreter extends AbstractInterpreter
 {
@@ -63,7 +65,15 @@ class JsonFileInterpreter extends AbstractInterpreter
 
     public function setSettings(array $settings): void
     {
-        $this->path = $settings['path'];
+        $path = $settings['path'];
+        try {
+            // Run the expression on an empty array to check validity
+            JmesPath::search($path, []);
+        } catch (SyntaxErrorException $e) {
+            throw new InvalidConfigurationException("Invalid JMESPath expression: " . $e->getMessage());
+        }
+
+        $this->path = $path;
     }
 
     /**
