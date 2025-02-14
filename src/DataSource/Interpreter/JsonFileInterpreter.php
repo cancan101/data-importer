@@ -35,7 +35,8 @@ class JsonFileInterpreter extends AbstractInterpreter
      */
     protected $cachedFilePath = null;
 
-    protected function loadDataRaw(string $path): array {
+    protected function loadDataRaw(string $path): array
+    {
         $content = file_get_contents($path);
         return json_decode($this->prepareContent($content), true);
     }
