@@ -78,7 +78,13 @@ class ObjectField extends AbstractOperator
             // for numerics?
             return TransformationDataTypeService::DEFAULT_TYPE;
         } else {
-            throw new InvalidConfigurationException(sprintf("Unsupported input type '%s' for load data object operator at transformation position %s", $inputType, $index));
+            throw new InvalidConfigurationException(
+                sprintf(
+                    "Unsupported input type '%s' for load data object operator at transformation position %s",
+                    $inputType,
+                    $index
+                )
+            );
         }
     }
 }
