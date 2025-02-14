@@ -15,6 +15,7 @@
 
 namespace Pimcore\Bundle\DataImporterBundle\DataSource\Interpreter;
 
+use JmesPath\Parser as Parser;
 use JmesPath\Env as JmesPath;
 use JmesPath\SyntaxErrorException;
 use Pimcore\Bundle\DataImporterBundle\PimcoreDataImporterBundle;
@@ -68,8 +69,7 @@ class JsonFileInterpreter extends AbstractInterpreter
     {
         $path = $settings['path'];
         try {
-            // Run the expression on an empty array to check validity
-            JmesPath::search($path, []);
+            (new Parser)->parse($path);
         } catch (SyntaxErrorException $e) {
             throw new InvalidConfigurationException("Invalid JMESPath expression: " . $e->getMessage());
         }
