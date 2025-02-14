@@ -32,7 +32,7 @@ class JsonFileInterpreter extends AbstractInterpreter
 
     protected function loadData(string $path): array
     {
-        if ($this->cachedFilePath === $path && !empty($this->cachedContent)) {
+        if ($this->cachedFilePath !== $path || empty($this->cachedContent)) {
             $content = file_get_contents($path);
 
             return json_decode($this->prepareContent($content), true);
