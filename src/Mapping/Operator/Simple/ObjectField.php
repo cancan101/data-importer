@@ -41,7 +41,7 @@ class ObjectField extends AbstractOperator
             return null;
         }
 
-        if(!$this->attribute){
+        if (!$this->attribute) {
             // is this how to handle no attrinute
             return null;
         }
