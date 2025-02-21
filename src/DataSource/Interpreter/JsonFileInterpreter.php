@@ -68,10 +68,12 @@ class JsonFileInterpreter extends AbstractInterpreter
     public function setSettings(array $settings): void
     {
         $path = $settings['path'];
-        try {
-            (new Parser)->parse($path);
-        } catch (SyntaxErrorException $e) {
-            throw new InvalidConfigurationException("Invalid JMESPath expression: " . $e->getMessage());
+        if (!empty($path)) {
+            try {
+                (new Parser)->parse($path);
+            } catch (SyntaxErrorException $e) {
+                throw new InvalidConfigurationException("Invalid JMESPath expression: " . $e->getMessage());
+            }
         }
 
         $this->path = $path;
