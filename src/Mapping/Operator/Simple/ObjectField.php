@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\DataImporterBundle\Mapping\Operator\Simple;
 use Pimcore\Bundle\DataImporterBundle\Exception\InvalidConfigurationException;
 use Pimcore\Bundle\DataImporterBundle\Mapping\Operator\AbstractOperator;
 use Pimcore\Bundle\DataImporterBundle\Mapping\Type\TransformationDataTypeService;
+use Pimcore\Bundle\DataImporterBundle\PimcoreDataImporterBundle;
 use Pimcore\Model\Element\ElementInterface;
 
 
@@ -34,15 +35,22 @@ class ObjectField extends AbstractOperator
         $this->forwardParameter = $settings['forwardParameter'] ?? '';
     }
 
+    private function logWarning(string $logMessage): void
+    {
+        $this->applicationLogger->warning($logMessage . ' ', [
+            'component' => PimcoreDataImporterBundle::LOGGER_COMPONENT_PREFIX . $this->configName,
+        ]);
+    }
+
     public function process(mixed $inputData, bool $dryRun = false): mixed
     {
         if (!$inputData instanceof ElementInterface) {
-            // is this how to handle type mismatch?
+            $this->logWarning("Receveid a non ElementInterface to process.");
             return null;
         }
 
         if (!$this->attribute) {
-            // is this how to handle no attrinute
+            $this->logWarning("No attribute provided.");
             return null;
         }
 
@@ -50,7 +58,7 @@ class ObjectField extends AbstractOperator
         $getter = 'get' . ucfirst($this->attribute);
 
         if (!method_exists($inputData, $getter)) {
-            // is there a better default here?
+            $this->logWarning("Method " .  $getter . " not found on provided object.");
             return null;
         }
 
