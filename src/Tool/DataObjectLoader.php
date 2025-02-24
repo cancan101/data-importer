@@ -60,7 +60,7 @@ class DataObjectLoader
 
     public function loadByAttribute(string $className,
                                     string $attributeName,
-                                    string $identifier,
+                                    ?string $identifier,
                                     string $attributeLanguage = '',
                                     bool $includeUnpublished = false,
                                     int $limit = 0,
