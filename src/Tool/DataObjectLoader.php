@@ -93,7 +93,13 @@ class DataObjectLoader
                 $queryFieldName = $this->getAttributeNameFromParts($objectBrickParts, false);
                 $conditions = ['objectbricks' => [$objectBrickParts[self::BRICK_NAME]]];
             }
-            $conditions['condition'] = $queryFieldName . ' ' . $operator . ' ' . Db::get()->quote($identifier);
+
+            if ((strtoupper($operator) === "IS" || strtoupper($operator) === "IS NOT") && $identifier === null) {
+                $identifierQuoted  = 'NULL';
+            } else {
+                $identifierQuoted = Db::get()->quote($identifier);
+            }
+            $conditions['condition'] = $queryFieldName . ' ' . $operator . ' ' . $identifierQuoted;
             if ($limit > 0) {
                 $conditions['limit'] = $limit;
             }
