@@ -60,7 +60,7 @@ class DataObjectLoader
 
     public function loadByAttribute(string $className,
                                     string $attributeName,
-                                    ?string $identifier,
+                                    string $identifier,
                                     string $attributeLanguage = '',
                                     bool $includeUnpublished = false,
                                     int $limit = 0,
@@ -73,7 +73,7 @@ class DataObjectLoader
             $className::setHideUnpublished(false);
         }
 
-        if ($this->isObjectBrickAttribute($attributeName) === false && $operator === '=') {
+        if ($this->isObjectBrickAttribute($attributeName) === false && $operator === '=' && $identifier !== '') {
             $getter = 'getBy' . $attributeName;
             if (empty($attributeLanguage) === false) {
                 $element = $className::$getter($identifier, $attributeLanguage, $limit, 0, $objectTypes);
@@ -94,11 +94,14 @@ class DataObjectLoader
                 $conditions = ['objectbricks' => [$objectBrickParts[self::BRICK_NAME]]];
             }
 
-            if ((strtoupper($operator) === "IS" || strtoupper($operator) === "IS NOT") && $identifier === null) {
+            // Pimcore stores empty string as NULL so we need to use IS NULL for lookup
+            if ($operator === '=' && $identifier === '') {
                 $identifierQuoted  = 'NULL';
+                $operator = 'IS';
             } else {
                 $identifierQuoted = Db::get()->quote($identifier);
             }
+
             $conditions['condition'] = $queryFieldName . ' ' . $operator . ' ' . $identifierQuoted;
             if ($limit > 0) {
                 $conditions['limit'] = $limit;
